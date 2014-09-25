@@ -1,0 +1,92 @@
+#!/bin/bash
+docker=docker
+prefix=devbox_
+default_image=koelnconcert/devbox
+
+function main {
+    cmd=$1;shift
+    case "$cmd" in
+        "" ) usage;;
+        "attach" ) attach $@;;
+        "create" ) create $@;;
+        "list" ) list | column -t -n;;
+        "rm") remove $@;;
+        * ) quit "unknown command \"$cmd\"";;
+    esac
+}
+
+function exists {
+    docker inspect $1 >/dev/null 2>&1
+}
+
+function running {
+    is_running=$(docker inspect --format {{.State.Running}} $1)
+    [ "$is_running" = "true" ]
+}
+
+function attach {
+    box=$1;shift
+    container=$prefix$box
+    [ -z "$box" ] && quit "no devbox given"
+    exists $container || quit "devbox '$box' does not exists"
+    running $container && quit "already attached to devbox '$box'"
+
+    $docker start -ai $@ $container
+}
+
+function create {
+    box=$1;shift
+    container=$prefix$box
+    [ -z "$box" ] && quit "no devbox given"
+    exists $container && quit "devbox '$box' already exists"
+
+    hostname=${container}_docker
+    image=$default_image
+    docker run -it --name $container --hostname $hostname $@ $image
+}
+
+function remove {
+    box=$1;shift
+    container=$prefix$box
+    [ -z "$box" ] && quit "no devbox given"
+    exists $container || quit "devbox '$box' does not exists"
+    running $container && quit "devbox '$box' is still running"
+
+    $docker rm $container >/dev/null
+}
+
+function list {
+    boxes=$($docker ps -a | tail -n +2 | egrep -o "$prefix\S+\s*$" | tr -d " " | sed "s/^$prefix//" | sort )
+    echo -e "NAME\tRUNNING\tSTARTED_AT\tFINISHED_AT\tIMAGE\tIMAGE_DATE"
+    for box in $boxes; do
+        container=$prefix$box
+        inspect=$($docker inspect $container | jq .[0])
+        function get {
+            jq -r $@ <<< $inspect
+        }
+        running=$(get .State.Running)
+        started=$(get .State.StartedAt[0:16])
+        if [ "$running" = "false" ]; then
+            finished=$(get .State.FinishedAt[0:16])
+        else
+            finished=
+        fi
+        image=$(get .Config.Image)
+        real_image=$(get .Image)
+        image_date=$($docker inspect $real_image | jq -r .[0].Created[0:16])
+        echo -e "$box\t$running\t$started\t$finished\t$image\t$image_date"
+    done
+}
+
+function quit {
+    echo $1
+    exit 1
+}
+
+function usage {
+    echo "TODO: HELP PAGE"
+    exit 0
+}
+
+main $@
+
