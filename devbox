@@ -40,7 +40,7 @@ function create {
     [ -z "$box" ] && quit "no devbox given"
     exists $container && quit "devbox '$box' already exists"
 
-    hostname=${container}_docker
+    hostname=${container}
     image=$default_image
     docker run -it --name $container --hostname $hostname $@ $image
 }
