@@ -43,5 +43,5 @@ remove devbox after shell quits:
 
 build and use custom devbox
 
-    docker build -t "mydevbox_image" https://github.com/<name>/<repo>.git # or local path
+    devbox build mydevbox_image https://github.com/<name>/<repo>.git # or local path
     devbox create my mydevbox_image
