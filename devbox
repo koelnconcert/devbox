@@ -1,10 +1,12 @@
 #!/bin/bash
+CONFIG_FILE="$HOME/.devboxrc"
 
 function init {
-    DOCKER_CMD=docker
-    DOCKER_PREFIX=devbox_
-    DEFAULT_IMAGE=koelnconcert/devbox
-    DEFAULT_SHELL=bash
+    [ -r $CONFIG_FILE ] && source $CONFIG_FILE
+    : ${DOCKER_CMD:=docker}
+    : ${DOCKER_PREFIX:=devbox_}
+    : ${DEFAULT_IMAGE:=ubuntu}
+    : ${DEFAULT_SHELL:=bash}
 }
 
 function main {
