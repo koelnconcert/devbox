@@ -2,6 +2,7 @@
 docker=docker
 prefix=devbox_
 default_image=koelnconcert/devbox
+default_command=bash
 
 function main {
     cmd=$1;shift
@@ -41,8 +42,9 @@ function create {
     exists $container && quit "devbox '$box' already exists"
 
     hostname=${container}
-    image=$default_image
-    docker run -it --name $container --hostname $hostname $@ $image
+    [ -z "$1" ] && image=$default_image
+    [ -z "$2" ] && command=$default_command
+    docker run -it --name $container --hostname $hostname $@ $image $command
 }
 
 function remove {
