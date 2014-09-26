@@ -24,7 +24,7 @@ _devbox_devbox () {
 }
 
 _devbox () {
-    local commands="attach create list rm"
+    local commands="attach build create list rm"
     local cur="${COMP_WORDS[COMP_CWORD]}"
     COMPREPLY=()
     
