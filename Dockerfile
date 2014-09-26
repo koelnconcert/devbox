@@ -14,12 +14,12 @@ MAINTAINER Sebastian Peters <koelnconcert@googlemail.com>
 
 ## install packages
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update -y
-RUN apt-get install -y curl
-RUN apt-get install -y wget
-RUN apt-get install -y git
-RUN apt-get install -y vim
-RUN apt-get install -y man-db
+RUN apt-get update -y && apt-get install -y \
+    curl \
+    git \
+    man-db \
+    vim \
+    wget
 
 ## base config
 RUN echo "ALL	ALL = (ALL) NOPASSWD: ALL" >> /etc/sudoers
@@ -30,9 +30,7 @@ RUN echo "ALL	ALL = (ALL) NOPASSWD: ALL" >> /etc/sudoers
 # ENV LC_ALL de_DE.UTF-8
 
 ## create dev user
-RUN useradd dev
-RUN mkdir /home/dev
-RUN chown -R dev: /home/dev
+RUN useradd -m dev
 WORKDIR /home/dev
 ENV HOME /home/dev
 USER dev
