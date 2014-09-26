@@ -1,8 +1,11 @@
 #!/bin/bash
-docker=docker
-prefix=devbox_
-default_image=koelnconcert/devbox
-default_command=bash
+
+function init {
+    DOCKER_CMD=docker
+    DOCKER_PREFIX=devbox_
+    DEFAULT_IMAGE=koelnconcert/devbox
+    DEFAULT_SHELL=bash
+}
 
 function main {
     cmd=$1;shift
@@ -27,45 +30,45 @@ function running {
 
 function attach {
     box=$1;shift
-    container=$prefix$box
+    container=$DOCKER_PREFIX$box
     [ -z "$box" ] && quit "no devbox given"
     exists $container || quit "devbox '$box' does not exists"
     running $container && quit "already attached to devbox '$box'"
 
-    $docker start -ai $@ $container
+    $DOCKER_CMD start -ai $@ $container
 }
 
 function create {
     box=$1;shift
-    container=$prefix$box
+    container=$DOCKER_PREFIX$box
     hostname=${container}
     [ -z "$box" ] && quit "no devbox given"
     exists $container && quit "devbox '$box' already exists"
 
     #try to find if images and command are specified (hacky)
     args=( $( sed 's/-\S*//g' <<< $@ ) ) # non-option params
-    [ -z "${args[0]}" ] && image=$default_image
-    [ -z "${args[1]}" ] && command=$default_command
+    [ -z "${args[0]}" ] && image=$DEFAULT_IMAGE
+    [ -z "${args[1]}" ] && shell=$DEFAULT_SHELL
 
-    docker run -it --name $container --hostname $hostname $@ $image $command
+    $DOCKER_CMD run -it --name $container --hostname $hostname $@ $image $shell
 }
 
 function remove {
     box=$1;shift
-    container=$prefix$box
+    container=$DOCKER_PREFIX$box
     [ -z "$box" ] && quit "no devbox given"
     exists $container || quit "devbox '$box' does not exists"
     running $container && quit "devbox '$box' is still running"
 
-    $docker rm $container >/dev/null
+    $DOCKER_CMD rm $container >/dev/null
 }
 
 function list {
-    boxes=$($docker ps -a | tail -n +2 | egrep -o "$prefix\S+\s*$" | tr -d " " | sed "s/^$prefix//" | sort )
+    boxes=$($DOCKER_CMD ps -a | tail -n +2 | egrep -o "$DOCKER_PREFIX\S+\s*$" | tr -d " " | sed "s/^$DOCKER_PREFIX//" | sort )
     echo -e "NAME\tRUNNING\tSTARTED_AT\tFINISHED_AT\tIMAGE\tIMAGE_DATE"
     for box in $boxes; do
-        container=$prefix$box
-        inspect=$($docker inspect $container | jq .[0])
+        container=$DOCKER_PREFIX$box
+        inspect=$($DOCKER_CMD inspect $container | jq .[0])
         function get {
             jq -r $@ <<< $inspect
         }
@@ -78,7 +81,7 @@ function list {
         fi
         image=$(get .Config.Image)
         real_image=$(get .Image)
-        image_date=$($docker inspect $real_image | jq -r .[0].Created[0:16])
+        image_date=$($DOCKER_CMD inspect $real_image | jq -r .[0].Created[0:16])
         echo -e "$box\t$running\t$started\t$finished\t$image\t$image_date"
     done
 }
@@ -96,7 +99,7 @@ function usage {
   $name - tool to manage disposable development environments (devboxes)
 
     devboxes are docker containers starting into a shell.
-    all devboxes are 'namespaced' in docker via a common name prefix ($prefix).
+    all devboxes are 'namespaced' in docker via a common name prefix ($DOCKER_PREFIX).
 
   usage:
 
@@ -110,15 +113,15 @@ function usage {
 
     $name create <devbox> --rm       - remove devbox after shell has quit
 
-  configuration:
+  configuration (set in ~/.devboxrc):
 
-    default image: $default_image
-    default shell: $default_command
-    docker prefix: $prefix
+    DEFAULT_IMAGE = $DEFAULT_IMAGE
+    DEFAULT_SHELL = $DEFAULT_SHELL
 
 __EOF
     exit 0
 }
 
+init
 main $@
 
