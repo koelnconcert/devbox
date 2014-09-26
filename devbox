@@ -38,12 +38,15 @@ function attach {
 function create {
     box=$1;shift
     container=$prefix$box
+    hostname=${container}
     [ -z "$box" ] && quit "no devbox given"
     exists $container && quit "devbox '$box' already exists"
 
-    hostname=${container}
-    [ -z "$1" ] && image=$default_image
-    [ -z "$2" ] && command=$default_command
+    #try to find if images and command are specified (hacky)
+    args=( $( sed 's/-\S*//g' <<< $@ ) ) # non-option params
+    [ -z "${args[0]}" ] && image=$default_image
+    [ -z "${args[1]}" ] && command=$default_command
+
     docker run -it --name $container --hostname $hostname $@ $image $command
 }
 
