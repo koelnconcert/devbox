@@ -1,0 +1,43 @@
+#!/bin/bash
+
+__devbox_boxes () {
+    running=${1}
+    devbox list | tail -n +2 | egrep "^\S*\s*$running" | cut -d " " -f1
+}
+
+__devbox_compreply () {
+    COMPREPLY=( $(compgen -W "$1" -- ${cur}) )
+}
+
+_devbox_attach () {
+    if [ $COMP_CWORD -eq 2 ]; then
+        __devbox_compreply "$(__devbox_boxes false)"
+    fi
+}
+
+_devbox_rm () {
+    __devbox_compreply "$(__devbox_boxes false)"
+}
+
+_devbox_devbox () {
+    COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
+}
+
+_devbox () {
+    local commands="attach create list rm"
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    COMPREPLY=()
+    
+    if [ $COMP_CWORD -eq 1 ]; then
+        local command='devbox'
+    else
+        local command=${COMP_WORDS[1]}
+    fi
+
+    local completions_func=_devbox_${command}
+    declare -F $completions_func >/dev/null && $completions_func
+
+    return 0
+}
+
+complete -F _devbox devbox
