@@ -7,11 +7,11 @@ default_command=bash
 function main {
     cmd=$1;shift
     case "$cmd" in
-        "" ) usage;;
-        "attach" ) attach $@;;
-        "create" ) create $@;;
-        "list" ) list | column -t -n;;
-        "rm") remove $@;;
+        "" | --help | -h) usage;;
+        attach ) attach $@;;
+        create ) create $@;;
+        list ) list | column -t -n;;
+        rm) remove $@;;
         * ) quit "unknown command \"$cmd\"";;
     esac
 }
@@ -89,7 +89,34 @@ function quit {
 }
 
 function usage {
-    echo "TODO: HELP PAGE"
+    name=`basename $0`
+    ____=$(sed 's/./ /g' <<< $name) # space for alignment
+    cat <<__EOF
+
+  $name - tool to manage disposable development environments (devboxes)
+
+    devboxes are docker containers starting into a shell.
+    all devboxes are 'namespaced' in docker via a common name prefix ($prefix).
+
+  usage:
+
+    $name list                       - list all devboxes
+    $name attach <devbox>            - attach to a existing devbox
+    $name rm <devbox> [<devbox>]*    - create devbox(es)
+    $name create <devbox> [<docker-params>] [image] [shell]
+    $____                            - create a new devbox with name <devbox>
+
+  tips:
+
+    $name create <devbox> --rm       - remove devbox after shell has quit
+
+  configuration:
+
+    default image: $default_image
+    default shell: $default_command
+    docker prefix: $prefix
+
+__EOF
     exit 0
 }
 
