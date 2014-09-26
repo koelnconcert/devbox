@@ -43,5 +43,5 @@ remove devbox after shell quits:
 
 build and use custom devbox
 
-    devbox build mydevbox_image https://github.com/<name>/<repo>.git # or local path
-    devbox create my mydevbox_image
+    devbox build devbox_base https://github.com/koelnconcert/devbox.git # or local path
+    devbox create my devbox_base
