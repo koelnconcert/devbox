@@ -70,6 +70,8 @@ function remove {
     running $container && quit "devbox '$box' is still running"
 
     $DOCKER_CMD rm $container >/dev/null
+
+    [ -n "$1" ] && remove $@
 }
 
 function list {
