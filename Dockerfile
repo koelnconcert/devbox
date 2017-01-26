@@ -9,12 +9,13 @@
 ##
 ## please adjust to your needs
 
-FROM ubuntu:14.04
+FROM debian:jessie
 MAINTAINER Sebastian Peters <koelnconcert@googlemail.com>
 
 ## install packages
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y && apt-get install -y \
+    sudo \
     curl \
     git \
     man-db \
