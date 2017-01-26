@@ -4,7 +4,7 @@ CONFIG_FILE="$HOME/.devboxrc"
 function init {
     [ -r $CONFIG_FILE ] && source $CONFIG_FILE
     : ${DOCKER_CMD:=docker}
-    : ${DOCKER_PREFIX:=devbox_}
+    : ${DOCKER_PREFIX:=devbox-}
     : ${DEFAULT_IMAGE:=ubuntu}
     : ${DEFAULT_SHELL:=bash}
 }
