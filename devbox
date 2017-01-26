@@ -76,7 +76,7 @@ function remove {
 
 function list {
     boxes=$($DOCKER_CMD ps -a | tail -n +2 | egrep -o "$DOCKER_PREFIX\S+\s*$" | tr -d " " | sed "s/^$DOCKER_PREFIX//" | sort )
-    echo -e "NAME\tRUNNING\tSTARTED_AT\tFINISHED_AT\tIMAGE\tIMAGE_DATE"
+    echo -e "NAME\tRUNNING\tSTARTED_AT\tFINISHED_AT\tIMAGE\tREAL_IMAGE\tIMAGE_DATE"
     for box in $boxes; do
         container=$DOCKER_PREFIX$box
         inspect=$($DOCKER_CMD inspect $container | jq .[0])
@@ -91,9 +91,9 @@ function list {
             finished=
         fi
         image=$(get .Config.Image)
-        real_image=$(get .Image)
+        real_image=$(get .Image[0:16])
         image_date=$($DOCKER_CMD inspect $real_image | jq -r .[0].Created[0:16])
-        echo -e "$box\t$running\t$started\t$finished\t$image\t$image_date"
+        echo -e "$box\t$running\t$started\t$finished\t$image\t$real_image\t$image_date"
     done
 }
 
